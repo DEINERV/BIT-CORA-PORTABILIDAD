@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Bitácora de Portabilidad</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+      position: relative;
+    }
+    .formulario {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    .formulario label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .formulario input, .formulario select, .formulario textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .formulario button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #0078D7;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .formulario button:hover {
+      background-color: #005fa3;
+    }
+    .marca-agua {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      font-size: 12px;
+      color: rgba(0,0,0,0.3);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #0078D7;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h2>Bitácora de Seguimiento para Portabilidad</h2>
+  <form class="formulario" id="formulario">
+    <label for="tienda">Tienda:</label>
+    <select id="tienda">
+      <option>Franquicia Cusco - El Sol</option>
+      <option>Franquicia Huancayo RP II</option>
+      <option>Franquicia Ayacucho</option>
+      <option>Franquicia Huanuco Real Plaza</option>
+      <option>Franquicia Proceres</option>
+      <option>Franquicia Santa Anita</option>
+      <option>Franquicia Cerro de Pasco</option>
+      <option>Franquicia Mega Plaza L91</option>
+      <option>Franquicia Cusco Real Plaza</option>
+      <option>Franquicia Puruchuco</option>
+      <option>Franquicia Grimaldo</option>
+      <option>Franquicia Tarma</option>
+      <option>TEX Express Huancayo Real</option>
+      <option>Franquicia Comas</option>
+      <option>Franquicia Chimu 810</option>
+      <option>Franquicia Huamantanga</option>
+    </select>
+
+    <label for="dni">DNI del Cliente:</label>
+    <input type="text" id="dni" maxlength="8">
+
+    <label for="numero">Número de Contacto:</label>
+    <input type="text" id="numero">
+
+    <label for="tipoCaso">Tipo de Caso:</label>
+    <select id="tipoCaso">
+      <option>Línea suspendida por deuda</option>
+      <option>Cliente no cumple los 30 días de permanencia mínima</option>
+      <option>Cliente agendado</option>
+      <option>Cliente no cuenta con el chip activo, lo recupera para portar</option>
+      <option>Cliente quiere línea nueva, pero tiene prepagos activos en otro operador</option>
+    </select>
+
+    <label for="fechaAtencion">Fecha de Atención:</label>
+    <input type="date" id="fechaAtencion">
+
+    <label for="fechaAgendamiento">Fecha de Agendamiento:</label>
+    <input type="date" id="fechaAgendamiento">
+
+    <label for="estado">Estado de Agendamiento:</label>
+    <select id="estado">
+      <option>Porta concretada</option>
+      <option>Pendiente</option>
+      <option>En seguimiento</option>
+      <option>Desisitió</option>
+    </select>
+
+    <label for="asesor">Asesor(a) <small>(Ingrese primero apellidos y luego nombres)</small>:</label>
+    <input type="text" id="asesor">
+
+    <label for="observacion">Observación:</label>
+    <textarea id="observacion" rows="3"></textarea>
+
+    <button type="button" onclick="agregarRegistro()">Agregar Registro</button>
+    <button type="reset">Limpiar Campos</button>
+    <button type="button" onclick="descargarExcel()">Descargar Excel</button>
+  </form>
+
+  <table id="tablaRegistros">
+    <thead>
+      <tr>
+        <th>Tienda</th>
+        <th>DNI</th>
+        <th>Número</th>
+        <th>Tipo de Caso</th>
+        <th>Fecha Atención</th>
+        <th>Fecha Agendamiento</th>
+        <th>Estado</th>
+        <th>Asesor</th>
+        <th>Observación</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="marca-agua">© Deiner Vallejos Lozano</div>
+
+  <script>
+    const registros = [];
+
+    function agregarRegistro() {
+      const registro = {
+        Tienda: document.getElementById('tienda').value,
+        DNI: document.getElementById('dni').value,
+        Numero: document.getElementById('numero').value,
+        TipoCaso: document.getElementById('tipoCaso').value,
+        FechaAtencion: document.getElementById('fechaAtencion').value,
+        FechaAgendamiento: document.getElementById('fechaAgendamiento').value,
+        Estado: document.getElementById('estado').value,
+        Asesor: document.getElementById('asesor').value,
+        Observacion: document.getElementById('observacion').value
+      };
+      registros.push(registro);
+      agregarFilaATabla(registro);
+      alert("Registro agregado correctamente");
+      document.getElementById('formulario').reset();
+    }
+
+    function agregarFilaATabla(registro) {
+      const tbody = document.querySelector("#tablaRegistros tbody");
+      const fila = document.createElement("tr");
+      for (const clave in registro) {
+        const celda = document.createElement("td");
+        celda.textContent = registro[clave];
+        fila.appendChild(celda);
+      }
+      tbody.appendChild(fila);
+    }
+
+    function descargarExcel() {
+      if (registros.length === 0) {
+        alert("No hay registros para exportar.");
+        return;
+      }
+      const ws = XLSX.utils.json_to_sheet(registros);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Portabilidad");
+      XLSX.writeFile(wb, "bitacora_portabilidad.xlsx");
+    }
+  </script>
+</body>
+</html>
