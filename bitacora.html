@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Bitácora de Portabilidad</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -49,29 +48,15 @@
       font-size: 12px;
       color: rgba(0,0,0,0.3);
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-    }
-    table, th, td {
-      border: 1px solid #ccc;
-    }
-    th, td {
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #0078D7;
-      color: white;
-    }
   </style>
 </head>
 <body>
   <h2>Bitácora de Seguimiento para Portabilidad</h2>
+
   <form class="formulario" id="formulario">
     <label for="tienda">Tienda:</label>
     <select id="tienda">
+      <option value="">-- Seleccione tienda --</option>
       <option>Franquicia Cusco - El Sol</option>
       <option>Franquicia Huancayo RP II</option>
       <option>Franquicia Ayacucho</option>
@@ -98,6 +83,7 @@
 
     <label for="tipoCaso">Tipo de Caso:</label>
     <select id="tipoCaso">
+      <option value="">-- Seleccione tipo de caso --</option>
       <option>Línea suspendida por deuda</option>
       <option>Cliente no cumple los 30 días de permanencia mínima</option>
       <option>Cliente agendado</option>
@@ -113,6 +99,7 @@
 
     <label for="estado">Estado de Agendamiento:</label>
     <select id="estado">
+      <option value="">-- Seleccione estado --</option>
       <option>Porta concretada</option>
       <option>Pendiente</option>
       <option>En seguimiento</option>
@@ -127,31 +114,11 @@
 
     <button type="button" onclick="agregarRegistro()">Agregar Registro</button>
     <button type="reset">Limpiar Campos</button>
-    <button type="button" onclick="descargarExcel()">Descargar Excel</button>
   </form>
-
-  <table id="tablaRegistros">
-    <thead>
-      <tr>
-        <th>Tienda</th>
-        <th>DNI</th>
-        <th>Número</th>
-        <th>Tipo de Caso</th>
-        <th>Fecha Atención</th>
-        <th>Fecha Agendamiento</th>
-        <th>Estado</th>
-        <th>Asesor</th>
-        <th>Observación</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
 
   <div class="marca-agua">© Deiner Vallejos Lozano</div>
 
   <script>
-    const registros = [];
-
     function agregarRegistro() {
       const registro = {
         Tienda: document.getElementById('tienda').value,
@@ -164,32 +131,27 @@
         Asesor: document.getElementById('asesor').value,
         Observacion: document.getElementById('observacion').value
       };
-      registros.push(registro);
-      agregarFilaATabla(registro);
-      alert("Registro agregado correctamente");
-      document.getElementById('formulario').reset();
-    }
 
-    function agregarFilaATabla(registro) {
-      const tbody = document.querySelector("#tablaRegistros tbody");
-      const fila = document.createElement("tr");
-      for (const clave in registro) {
-        const celda = document.createElement("td");
-        celda.textContent = registro[clave];
-        fila.appendChild(celda);
-      }
-      tbody.appendChild(fila);
-    }
-
-    function descargarExcel() {
-      if (registros.length === 0) {
-        alert("No hay registros para exportar.");
+      if (!registro.Tienda || !registro.DNI || !registro.Numero || !registro.TipoCaso || !registro.FechaAtencion || !registro.FechaAgendamiento || !registro.Estado || !registro.Asesor) {
+        alert("Por favor complete todos los campos obligatorios antes de enviar.");
         return;
       }
-      const ws = XLSX.utils.json_to_sheet(registros);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Portabilidad");
-      XLSX.writeFile(wb, "bitacora_portabilidad.xlsx");
+
+      fetch("https://script.google.com/macros/s/AKfycbxDhZy9SVADz4ctYqY2HXI3ik78B_RdsfuW5IcGy2etUPxoTWclZnp9Z55B0vrpmjrf/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(registro)
+      })
+      .then(() => {
+        alert("✅ Registro enviado y guardado correctamente en Google Sheets");
+        document.getElementById('formulario').reset();
+      })
+      .catch((error) => {
+        alert("❌ Hubo un error al guardar: " + error);
+      });
     }
   </script>
 </body>
